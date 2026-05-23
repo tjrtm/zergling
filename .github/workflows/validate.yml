@@ -53,11 +53,11 @@ jobs:
               $tokens = $null; $errors = $null
               [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$tokens, [ref]$errors) | Out-Null
               if ($errors.Count -ne 0) {
-                Write-Host "PowerShell syntax errors in $f:"
+                Write-Host "PowerShell syntax errors in ${f}:"
                 $errors | ForEach-Object { Write-Host "  $_" }
                 exit 1
               }
-              Write-Host "ok: $f"
+              Write-Host "ok: ${f}"
             }
           }
           if (-not $any) { Write-Host "no .ps1 files found to check" }
