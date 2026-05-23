@@ -1,0 +1,49 @@
+<!doctype html>
+<!--
+  example expression — canvas drift
+  a generative particle field that wanders until the next frame
+  replaces it. the agent uses this for moments that should keep
+  moving while it thinks.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>example · canvas drift</title>
+<style>
+  html,body{margin:0;height:100%;background:#04060a;overflow:hidden;font-family:ui-monospace,monospace}
+  canvas{position:fixed;inset:0;display:block;width:100vw;height:100vh}
+  .label{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);font-size:.55rem;letter-spacing:.4em;color:#26354a;text-transform:uppercase}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="label">— canvas drift —</div>
+<script>
+const c = document.getElementById('c'), x = c.getContext('2d');
+function R(){ c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; x.scale(devicePixelRatio, devicePixelRatio); }
+R(); addEventListener('resize', R);
+const W = () => innerWidth, H = () => innerHeight;
+const N = 180, dots = [];
+for (let i = 0; i < N; i++) dots.push({
+  x: Math.random()*W(), y: Math.random()*H(),
+  vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+  r: Math.random()*1.6+0.4, hue: 190+Math.random()*40, seed: Math.random()*1000
+});
+let t = 0;
+(function loop(){
+  t += 0.012;
+  x.fillStyle = 'rgba(4,6,10,0.12)'; x.fillRect(0, 0, W(), H());
+  for (const d of dots) {
+    d.x += d.vx + Math.sin(t + d.seed)*0.15;
+    d.y += d.vy + Math.cos(t*0.7 + d.seed)*0.1;
+    if (d.x < -5) d.x = W()+5; if (d.x > W()+5) d.x = -5;
+    if (d.y < -5) d.y = H()+5; if (d.y > H()+5) d.y = -5;
+    const a = 0.4 + Math.sin(t*0.6 + d.seed)*0.3;
+    x.fillStyle = `hsla(${d.hue},70%,65%,${a})`;
+    x.beginPath(); x.arc(d.x, d.y, d.r, 0, Math.PI*2); x.fill();
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

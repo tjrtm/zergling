@@ -1,7 +1,41 @@
+# OS / editor junk
 .DS_Store
 Thumbs.db
+desktop.ini
 *.swp
 *.swo
-node_modules/
+*~
+.idea/
+.vscode/
+*.code-workspace
+
+# Env
 .env
 .env.local
+.env.*.local
+
+# Python (pack / validate / rebuild_playlist tooling)
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Node (in case any tooling lands here later)
+node_modules/
+
+# Build / packaging scratch
+build/
+dist/
+*.tmp
+*.bak
+
+# Local agent-world fragments — should NEVER be in the repo.
+# The agent writes under the user's home, not under this directory; but
+# if anyone runs the project from inside the repo and the agent writes
+# locally by accident, ignore the artifacts.
+zergling-world/
+agent-world/

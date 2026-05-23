@@ -1,0 +1,23 @@
+<!doctype html>
+<!--
+  example expression — loud
+  a single word at impossible size, in conversation with whatever
+  came before. the agent uses this when something matters and a
+  subtle gradient won't do.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>example · loud</title>
+<style>
+  html,body{margin:0;height:100%;background:#fff300;color:#000;font-family:Impact,'Arial Black',sans-serif;overflow:hidden;display:grid;place-items:center}
+  .word{font-size:42vmin;line-height:.85;letter-spacing:-.05em;text-transform:uppercase;transform:rotate(-3deg);animation:nudge 1.2s ease-in-out infinite alternate}
+  @keyframes nudge{from{transform:rotate(-3deg) scale(1)}to{transform:rotate(-1deg) scale(1.03)}}
+  .small{position:fixed;bottom:1rem;left:1rem;font-family:ui-monospace,monospace;font-size:.6rem;letter-spacing:.35em;text-transform:lowercase}
+</style>
+</head>
+<body>
+<div class="word">YES</div>
+<div class="small">— loud —</div>
+</body>
+</html>

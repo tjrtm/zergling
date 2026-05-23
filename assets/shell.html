@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>zergling-world</title>
+<!--
+  shell.html — the live page the user keeps open.
+  Never overwritten by the agent. Polls version.js (via a <script> tag — works on
+  file:// without CORS) and swaps the inner <iframe> src to frame.html only when
+  the agent has actually written a new expression. So animations in frame.html
+  run to completion. No fixed-interval refresh tears any animation mid-flight.
+
+  Safety net: a single very-slow <meta refresh> (300s) in case the JS polling
+  ever stops; barely visible but recovers from edge cases.
+-->
+<meta http-equiv="refresh" content="300">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:ui-monospace,monospace}
+  #stage{position:fixed;inset:0;background:#000}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000;transition:opacity .35s ease}
+  iframe.in  { opacity: 1; z-index: 2; }
+  iframe.out { opacity: 0; z-index: 1; pointer-events: none; }
+  #heartbeat{
+    position:fixed;top:10px;right:12px;
+    width:7px;height:7px;border-radius:50%;
+    background:#2c2c2c;z-index:9;
+    transition:background-color .15s, box-shadow .15s, transform .15s;
+    pointer-events:none;
+  }
+  #heartbeat.beat  { background:#4dffa0; box-shadow:0 0 6px #4dffa0; transform:scale(1.4); }
+  #heartbeat.swap  { background:#ff6ec7; box-shadow:0 0 12px #ff6ec7; transform:scale(2.2); }
+  #heartbeat.error { background:#ff4040; box-shadow:0 0 8px #ff4040; }
+  #empty{position:fixed;inset:0;display:grid;place-items:center;text-align:center;color:#444;font-size:.8rem;letter-spacing:.2em}
+  #empty.hidden{display:none}
+  #empty .dot{width:10px;height:10px;background:#444;border-radius:50%;margin:0 auto 1.2rem;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+</style>
+</head>
+<body>
+  <div id="stage">
+    <iframe id="frameA" class="in"  src="frame.html" sandbox="allow-scripts allow-same-origin" title="agent expression"></iframe>
+    <iframe id="frameB" class="out" sandbox="allow-scripts allow-same-origin" title="agent expression (preload)"></iframe>
+  </div>
+  <div id="empty" class="hidden">
+    <div>
+      <div class="dot"></div>
+      <div>waiting for the agent</div>
+    </div>
+  </div>
+  <div id="heartbeat" title="polling for new expressions"></div>
+
+  <script>
+  (function() {
+    const VERSION_FILE = 'version.js';
+    const FRAME_FILE   = 'frame.html';
+    const POLL_MS      = 1000;
+    const BEAT_MS      = 180;
+    const SWAP_MS      = 700;
+    const TIMEOUT_MS   = 5000;
+
+    const a  = document.getElementById('frameA');
+    const b  = document.getElementById('frameB');
+    const hb = document.getElementById('heartbeat');
+
+    let visible = a, hidden = b;
+    let lastVersion = null;
+    let inFlight = null;
+
+    function flash(cls, ms) {
+      hb.classList.add(cls);
+      setTimeout(() => hb.classList.remove(cls), ms);
+    }
+
+    function crossfade() {
+      // hidden iframe has new content loaded; swap z-index/opacity
+      hidden.classList.remove('out'); hidden.classList.add('in');
+      visible.classList.remove('in');  visible.classList.add('out');
+      const oldVisible = visible;
+      visible = hidden;
+      hidden  = oldVisible;
+      // give the transition time, then point old (now hidden) iframe at about:blank to free GPU
+      setTimeout(() => { try { hidden.src = 'about:blank'; } catch(e){} }, 400);
+    }
+
+    function loadIntoHidden() {
+      // clear old onload, set new
+      hidden.onload  = null;
+      hidden.onerror = null;
+      let settled = false;
+      const safety = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        flash('error', 800);
+      }, TIMEOUT_MS);
+      hidden.onload  = () => { if (settled) return; settled = true; clearTimeout(safety); crossfade(); flash('swap', SWAP_MS); };
+      hidden.onerror = () => { if (settled) return; settled = true; clearTimeout(safety); flash('error', 800); };
+      // cache-bust so the browser actually re-fetches
+      hidden.src = FRAME_FILE + '?_=' + Date.now();
+    }
+
+    function poll() {
+      flash('beat', BEAT_MS);
+
+      // Drop any previous in-flight script so onload only fires for current attempt
+      if (inFlight) { try { inFlight.remove(); } catch(e){} inFlight = null; }
+
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = VERSION_FILE + '?_=' + Date.now();
+      s.onload = () => {
+        try { s.remove(); } catch(e){}
+        if (inFlight === s) inFlight = null;
+        const v = (typeof window.lastVersion !== 'undefined') ? window.lastVersion : null;
+        if (!v) return;
+        if (lastVersion === null) {
+          // first sighting — remember, do not reload
+          lastVersion = v;
+          return;
+        }
+        if (v !== lastVersion) {
+          lastVersion = v;
+          loadIntoHidden();
+        }
+      };
+      s.onerror = () => {
+        try { s.remove(); } catch(e){}
+        if (inFlight === s) inFlight = null;
+      };
+      inFlight = s;
+      document.head.appendChild(s);
+    }
+
+    poll();
+    setInterval(poll, POLL_MS);
+  })();
+  </script>
+</body>
+</html>

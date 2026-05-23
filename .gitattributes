@@ -1,0 +1,30 @@
+# Normalize line endings — keep scripts and docs consistent across OSes.
+* text=auto eol=lf
+
+# Markdown and shell tooling: always LF
+*.md   text eol=lf
+*.sh   text eol=lf
+*.py   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# PowerShell: CRLF so PS 5.1 parses cleanly on Windows
+*.ps1  text eol=crlf
+
+# Web assets — let the agent emit either; treat as text but auto-detect
+*.html text
+*.css  text
+*.js   text
+
+# Binary packages — never normalize
+*.skill binary
+*.zip   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.mp4   binary
+*.wav   binary
+*.mp3   binary

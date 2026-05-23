@@ -1,0 +1,25 @@
+<!doctype html>
+<!--
+  example expression — quiet
+  a still field, almost monochrome. the kind of frame the agent
+  writes when there is nothing to do and waiting is the activity.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>example · quiet</title>
+<style>
+  html,body{margin:0;height:100%;background:#0c0f14;color:#6a7785;font-family:ui-monospace,monospace;overflow:hidden;display:grid;place-items:center}
+  .dot{width:.7rem;height:.7rem;border-radius:50%;background:#3a4655;box-shadow:0 0 0 0 rgba(106,119,133,.4);animation:pulse 3.4s ease-in-out infinite}
+  @keyframes pulse{
+    0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(106,119,133,.4)}
+    50%{transform:scale(1.25);box-shadow:0 0 0 28px rgba(106,119,133,0)}
+  }
+  .label{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);font-size:.55rem;letter-spacing:.4em;color:#2a3340;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="dot"></div>
+<div class="label">— quiet —</div>
+</body>
+</html>

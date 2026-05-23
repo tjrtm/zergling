@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>zergling-world · timelapse</title>
+<style>
+  :root {
+    --bg: #07070b;
+    --bg2: #101018;
+    --panel: rgba(12,12,18,.92);
+    --fg: #e6e6ee;
+    --dim: #6a6a78;
+    --accent: #ff6ec7;
+    --accent2: #6ec7ff;
+    --grid: rgba(255,255,255,.04);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+    overflow: hidden;
+    user-select: none;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(ellipse at center, var(--bg2) 0%, var(--bg) 80%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #stage {
+    position: fixed; left: 0; right: 0; top: 0; bottom: 96px;
+    background: #000;
+    overflow: hidden;
+    z-index: 1;
+  }
+  #stage iframe {
+    width: 100%; height: 100%; border: 0;
+    display: block;
+    background: #000;
+  }
+  #stage iframe.transition-fade { animation: fadeIn .55s cubic-bezier(.2,.8,.2,1); }
+  #stage iframe.transition-slide-r { animation: slideR .45s cubic-bezier(.2,.8,.2,1); }
+  #stage iframe.transition-slide-l { animation: slideL .45s cubic-bezier(.2,.8,.2,1); }
+  #stage iframe.transition-zoom { animation: zoomIn .55s cubic-bezier(.2,.8,.2,1); }
+  @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideR   { from { transform: translateX( 8%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideL   { from { transform: translateX(-8%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes zoomIn   { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  #title {
+    position: fixed; top: 1rem; left: 1.4rem;
+    font-size: .65rem; color: var(--dim);
+    letter-spacing: .35em; text-transform: uppercase;
+    mix-blend-mode: difference;
+    z-index: 5;
+    pointer-events: none;
+  }
+  #liveLink {
+    position: fixed; top: 1rem; right: 1.4rem;
+    font-size: .65rem;
+    color: var(--accent2);
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--accent2);
+    padding: .35rem .7rem;
+    border-radius: 2px;
+    mix-blend-mode: difference;
+    z-index: 5;
+    opacity: .7;
+    transition: opacity .2s;
+  }
+  #liveLink:hover { opacity: 1; }
+
+  #controls {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    height: 96px;
+    background: var(--panel);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,.08);
+    display: grid;
+    grid-template-columns: auto auto auto 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1.5rem;
+    z-index: 10;
+  }
+  button, .btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.14);
+    color: var(--fg);
+    padding: .55rem .85rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .85rem;
+    border-radius: 2px;
+    transition: all .15s;
+    min-width: 44px;
+    text-align: center;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 700;
+    min-width: 56px;
+  }
+  button.primary:hover { background: #fff; border-color: #fff; }
+
+  .scrubber-wrap { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: .35rem; padding: 0 .5rem; }
+  #scrubber {
+    height: 8px;
+    background: rgba(255,255,255,.07);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  #progress {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .25s ease;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  #ticks {
+    position: absolute; inset: 0;
+    display: flex;
+    pointer-events: none;
+  }
+  .tick { flex: 1; border-right: 1px solid rgba(255,255,255,.06); }
+  .tick:last-child { border-right: 0; }
+  #scrubber:hover #progress { box-shadow: 0 0 14px var(--accent); }
+
+  #timeline-meta {
+    display: flex; justify-content: space-between;
+    font-size: .6rem; color: var(--dim); letter-spacing: .1em;
+  }
+  #timeline-meta b { color: var(--fg); font-weight: 500; }
+
+  select {
+    background: rgba(255,255,255,.05);
+    color: var(--fg);
+    border: 1px solid rgba(255,255,255,.14);
+    padding: .5rem .55rem;
+    font-family: inherit;
+    font-size: .75rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  select:hover { border-color: var(--accent); }
+
+  #meta {
+    font-size: .68rem; color: var(--dim);
+    letter-spacing: .08em;
+    text-align: right;
+    min-width: 200px;
+    line-height: 1.5;
+  }
+  #meta b { color: var(--fg); font-weight: 500; }
+  #meta .note { color: var(--accent2); font-style: italic; opacity: .85; }
+
+  #empty {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    text-align: center; color: var(--dim);
+    z-index: 2;
+    background: var(--bg);
+  }
+  #empty.hidden { display: none; }
+  #empty .dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 0 16px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(.8); opacity: .5; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+  #empty h1 { font-size: 1.1rem; font-weight: 400; color: var(--fg); margin: 0 0 .5rem; letter-spacing: .04em; }
+  #empty p { font-size: .75rem; margin: .3rem 0; opacity: .7; max-width: 32ch; line-height: 1.6; }
+  #empty code { background: rgba(255,255,255,.08); padding: .1rem .35rem; border-radius: 2px; font-size: .7rem; }
+
+  .kbd-hint {
+    position: fixed; bottom: 110px; left: 1.4rem;
+    font-size: .55rem; color: var(--dim);
+    letter-spacing: .15em;
+    opacity: 0;
+    transition: opacity .3s;
+    z-index: 5;
+    pointer-events: none;
+  }
+  body:hover .kbd-hint { opacity: .55; }
+
+  /* light theme toggle (theme=light) */
+  html[data-theme="light"] {
+    --bg: #fafaf7;
+    --bg2: #fff;
+    --panel: rgba(255,255,255,.95);
+    --fg: #1a1a1a;
+    --dim: #888;
+    --accent: #c4006e;
+    --accent2: #006ec4;
+    --grid: rgba(0,0,0,.04);
+  }
+
+  /* hide everything if user has reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    #stage iframe { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div id="title">zergling-world · timelapse</div>
+  <a id="liveLink" href="../current.html" target="_blank">live ↗</a>
+
+  <div id="stage"></div>
+
+  <div id="empty">
+    <div>
+      <div class="dot"></div>
+      <h1>no history yet</h1>
+      <p>full-ritual expressions archived here will appear in this timeline.</p>
+      <p>watch <code>../current.html</code> for the live page.</p>
+    </div>
+  </div>
+
+  <div class="kbd-hint">SPACE play · ◄ ► step · HOME/END jump · T transition · L theme</div>
+
+  <div id="controls">
+    <button id="prev" title="previous (←)">◄</button>
+    <button id="play" class="primary" title="play / pause (space)">▶</button>
+    <button id="next" title="next (→)">►</button>
+    <div class="scrubber-wrap">
+      <div id="scrubber" title="click to seek">
+        <div id="ticks"></div>
+        <div id="progress"></div>
+      </div>
+      <div id="timeline-meta">
+        <span>oldest</span>
+        <span id="position">0 / 0</span>
+        <span>newest</span>
+      </div>
+    </div>
+    <select id="speed" title="frame interval">
+      <option value="3000">3.0s · slow</option>
+      <option value="1500" selected>1.5s · normal</option>
+      <option value="750">0.75s · fast</option>
+      <option value="300">0.3s · sprint</option>
+      <option value="5000">5.0s · contemplative</option>
+    </select>
+    <div id="meta">
+      <b id="frameTime">—</b><br>
+      <span id="frameNote" class="note"></span>
+    </div>
+  </div>
+
+  <!--
+    playlist.js defines: window.playlist = [{ file, ts, note }, ...]
+    Loaded with a cache-buster so the browser never serves a stale playlist —
+    the file grows over time and we want every page open to see the newest list.
+  -->
+  <script>
+    (function() {
+      const s = document.createElement('script');
+      s.src = 'playlist.js?_=' + Date.now();
+      s.onerror = function() { document.getElementById('empty').classList.remove('hidden'); };
+      s.onload  = function() { initPlayer(); };
+      document.head.appendChild(s);
+    })();
+
+    function initPlayer() {
+      const frames = (typeof window.playlist !== 'undefined' && Array.isArray(window.playlist)) ? window.playlist.slice() : [];
+
+      const stage    = document.getElementById('stage');
+      const empty    = document.getElementById('empty');
+      const progress = document.getElementById('progress');
+      const ticks    = document.getElementById('ticks');
+      const position = document.getElementById('position');
+      const frameTime = document.getElementById('frameTime');
+      const frameNote = document.getElementById('frameNote');
+      const playBtn  = document.getElementById('play');
+      const prevBtn  = document.getElementById('prev');
+      const nextBtn  = document.getElementById('next');
+      const speedSel = document.getElementById('speed');
+      const scrubber = document.getElementById('scrubber');
+
+      const TRANSITIONS = ['transition-fade','transition-slide-r','transition-slide-l','transition-zoom'];
+      let transitionIdx = 0;
+      let idx = 0;
+      let playing = false;
+      let timer = null;
+
+      if (frames.length === 0) {
+        document.getElementById('controls').style.opacity = '.4';
+        return;
+      }
+      empty.classList.add('hidden');
+
+      // build scrubber ticks
+      ticks.innerHTML = frames.map(() => '<div class="tick"></div>').join('');
+
+      function fmt(ts) {
+        if (!ts) return '';
+        return ts.replace('T', ' ').replace(/Z$/, ' UTC');
+      }
+
+      function show(i, direction) {
+        idx = Math.max(0, Math.min(i, frames.length - 1));
+        const f = frames[idx];
+        const tcls = (direction === 'next') ? 'transition-slide-r'
+                   : (direction === 'prev') ? 'transition-slide-l'
+                   : TRANSITIONS[transitionIdx % TRANSITIONS.length];
+
+        const iframe = document.createElement('iframe');
+        // sandbox matches the live shell (current.html): scripts allowed,
+        // same-origin required so Chrome lets the iframe load file:// URLs
+        // when the parent page is itself file://. Without allow-same-origin
+        // the iframe gets a unique opaque origin and Chrome blocks the load
+        // with "Not allowed to load local resource".
+        iframe.sandbox = 'allow-scripts allow-same-origin';
+        iframe.src = f.file;
+        iframe.className = tcls;
+        // replace stage content
+        stage.innerHTML = '';
+        stage.appendChild(iframe);
+
+        progress.style.width = (frames.length === 1 ? 100 : (idx / (frames.length - 1) * 100)) + '%';
+        position.textContent = (idx + 1) + ' / ' + frames.length;
+        frameTime.textContent = fmt(f.ts) || f.file;
+        frameNote.textContent = f.note ? ('— ' + f.note) : '';
+      }
+
+      function play() {
+        if (frames.length < 2) return;
+        playing = true;
+        playBtn.textContent = '❚❚';
+        const interval = parseInt(speedSel.value, 10);
+        timer = setInterval(() => {
+          if (idx >= frames.length - 1) { pause(); return; }
+          show(idx + 1, 'next');
+        }, interval);
+      }
+      function pause() {
+        playing = false;
+        playBtn.textContent = '▶';
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+      function toggle() { playing ? pause() : play(); }
+
+      playBtn.addEventListener('click', toggle);
+      prevBtn.addEventListener('click', () => { pause(); show(idx - 1, 'prev'); });
+      nextBtn.addEventListener('click', () => { pause(); show(idx + 1, 'next'); });
+      speedSel.addEventListener('change', () => { if (playing) { pause(); play(); } });
+      scrubber.addEventListener('click', (e) => {
+        pause();
+        const rect = scrubber.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        show(Math.round(pct * (frames.length - 1)));
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+        switch (e.code) {
+          case 'Space':      e.preventDefault(); toggle(); break;
+          case 'ArrowRight': e.preventDefault(); pause(); show(idx + 1, 'next'); break;
+          case 'ArrowLeft':  e.preventDefault(); pause(); show(idx - 1, 'prev'); break;
+          case 'Home':       e.preventDefault(); pause(); show(0); break;
+          case 'End':        e.preventDefault(); pause(); show(frames.length - 1); break;
+          case 'KeyT':       e.preventDefault(); transitionIdx++; show(idx); break;
+          case 'KeyL':       e.preventDefault();
+            document.documentElement.dataset.theme =
+              document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            break;
+        }
+      });
+
+      // start at the oldest frame and auto-play through the story
+      // (user can pause with SPACE, scrub, or jump END to skip to newest)
+      show(0);
+      if (frames.length > 1) {
+        setTimeout(play, 600);  // small delay so first frame is visible briefly
+      }
+    }
+  </script>
+</body>
+</html>
