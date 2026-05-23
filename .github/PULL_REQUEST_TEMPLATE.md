@@ -6,12 +6,12 @@ What this PR changes, in one or two sentences.
 
 Brief context — what problem this solves or what it enables.
 
-## Verification
+## Verification (local — no CI)
 
 - [ ] `./pack.sh` rebuilds `zergling.skill` cleanly
 - [ ] `python validate.py` passes
 - [ ] `bash -n` clean for any edited `.sh`
-- [ ] PowerShell AST parse clean for any edited `.ps1` (CI checks this)
+- [ ] PowerShell AST parse clean for any edited `.ps1` (see CONTRIBUTING.md for the one-liner)
 - [ ] If the SKILL.md body changed, the vendor-native shims (`AGENTS.md`, `.cursor/rules/zergling.mdc`, `.github/copilot-instructions.md`, `.github/instructions/zergling.instructions.md`) are updated in sync
 
 ## Notes

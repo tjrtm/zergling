@@ -19,10 +19,23 @@ Edit anything. Then verify:
 python validate.py     # frontmatter + bootstrap + package integrity
 ```
 
-Bash syntax: `bash -n install.sh pack.sh uninstall.sh install-into-project.sh`
-PowerShell syntax (Windows): see `.github/workflows/validate.yml` for the AST parse one-liner.
+Both should be clean before you open a PR. There's no CI — keeping the project lean — so the responsibility is on you and the reviewer.
 
-CI runs all of the above on every push and PR — keep it green.
+Optional but recommended sanity checks for script changes:
+
+```bash
+bash -n install.sh install-into-project.sh uninstall.sh pack.sh
+```
+
+PowerShell (Windows) — parse `.ps1` files with the AST without executing them:
+
+```powershell
+foreach ($f in 'install.ps1','install-into-project.ps1','uninstall.ps1','pack.ps1') {
+  $errs = $null
+  [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$errs) | Out-Null
+  if ($errs.Count) { "FAIL ${f}:"; $errs } else { "ok: ${f}" }
+}
+```
 
 ## Where things live
 

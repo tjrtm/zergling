@@ -15,7 +15,6 @@ First public-ready release. The project graduates from a personal prototype to s
 - **`--dry-run`** and **`--overwrite-current`** / **`-Force`** flags on the install scripts.
 - **`tools/rebuild_playlist.py`** — regenerate `history/playlist.js` by scanning the `history/` directory; preserves notes across rebuilds.
 - **`examples/`** — three curated static frames (`01-quiet.html`, `02-loud.html`, `03-canvas.html`) illustrating the aesthetic range without invoking the skill.
-- **`.github/workflows/validate.yml`** — CI on push / PR runs whitespace check, Bash and PowerShell syntax checks, a `pack` round-trip, and `validate.py`.
 - **`.gitattributes`** — normalizes line endings (`*.sh` and `*.md` → LF, `*.ps1` → CRLF, `*.skill` → binary).
 - **`SKILL.md` — "External generative tools — use them if you have them"** section. Tells the agent: if the harness exposes image gen, TTS, ASR, music, video, code-exec, or any other tool, use it as part of the expression and save artifacts under `~/.claude/zergling-world/media/`.
 - **`SKILL.md`** — `version: 0.2.0` field in frontmatter.
@@ -29,8 +28,6 @@ First public-ready release. The project graduates from a personal prototype to s
 - **Installers** now seed `~/.claude/zergling-world/current.html` only if absent. Re-running never trashes a user-modified shell. `--overwrite-current` opts back into reseeding.
 - **`pack.sh` and `pack.ps1`** centralized through `tools/build_skill.py`; both probe for a working `python` / `python3` (the Windows App Execution Alias stub is detected and skipped).
 - **Skill package** (`zergling.skill`) trimmed to exactly three entries: `zergling/SKILL.md`, `zergling/INSTALL.md`, `zergling/assets/bootstrap.html`. No installer scripts, no shell, no examples in the ZIP.
-- **CI `git diff --check`** now runs against the PR base ref instead of being a no-op.
-
 ### Fixed
 
 - **Timelapse player** — three bugs in `history/index.html`:
