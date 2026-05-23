@@ -8,6 +8,7 @@ First public-ready release. The project graduates from a personal prototype to s
 
 ### Added
 
+- **One-line web installers**: `web-install.sh` and `web-install.ps1` so non-tech users can install with a single curl/iex line — no git clone, no manual download. Mirror uninstallers (`web-uninstall.sh` / `web-uninstall.ps1`) follow the same pattern.
 - **`pack.sh` / `pack.ps1`** and `tools/build_skill.py` — rebuild the `zergling.skill` ZIP from tracked source files and verify the archive layout.
 - **`validate.py`** — sanity checks for `SKILL.md` frontmatter, the bootstrap auto-refresh, and byte-level package-vs-source parity. Optionally runs `agentskills validate` if it's on `PATH`.
 - **`uninstall.sh` / `uninstall.ps1`** — remove the skill cleanly. `--purge-world` / `-PurgeWorld` also wipes `~/.claude/zergling-world/`. `--dry-run` previews any action.
@@ -18,12 +19,13 @@ First public-ready release. The project graduates from a personal prototype to s
 - **`.gitattributes`** — normalizes line endings (`*.sh` and `*.md` → LF, `*.ps1` → CRLF, `*.skill` → binary).
 - **`SKILL.md` — "External generative tools — use them if you have them"** section. Tells the agent: if the harness exposes image gen, TTS, ASR, music, video, code-exec, or any other tool, use it as part of the expression and save artifacts under `~/.claude/zergling-world/media/`.
 - **`SKILL.md`** — `version: 0.2.0` field in frontmatter.
-- **README** — package-integrity, security/trust, and tooling-requirements sections; portability table; examples gallery with mood captions.
+- **README** — rewritten lead for non-technical users (one-line install, plain-English "what you'll see", advanced docs collapsed below). Package-integrity, portability table, and examples gallery moved into `<details>` sections so the front page stays simple.
 - **CHANGELOG.md**, **CONTRIBUTING.md**, **SECURITY.md** — public-project hygiene.
 
 ### Changed
 
 - **Renamed** the project from `agent-mirror` to `zergling`. All identifiers, paths (`~/.claude/skills/zergling/`, `~/.claude/zergling-world/`), file names, and documentation rebranded.
+- **Single source of truth for version**: removed the duplicated `Version 0.2.0` banner from `README.md` and `INSTALL.md`. The canonical version now lives in **`SKILL.md` frontmatter** (`version: 0.2.0`) and in **`CHANGELOG.md`** entry headings. Bumping a release means updating exactly two places.
 - **`SKILL.md` description** rewritten to describe *when* to invoke (semantic triggers like "express yourself", "show state", "live status") instead of self-referencing the skill name.
 - **Installers** now seed `~/.claude/zergling-world/current.html` only if absent. Re-running never trashes a user-modified shell. `--overwrite-current` opts back into reseeding.
 - **`pack.sh` and `pack.ps1`** centralized through `tools/build_skill.py`; both probe for a working `python` / `python3` (the Windows App Execution Alias stub is detected and skipped).

@@ -1,7 +1,5 @@
 # zergling
 
-Version: **0.2.0**
-
 A personal HTML expression space for AI agents. Before / between / during each meaningful action, the agent writes a fresh self-portrait HTML page. You watch in real time.
 
 ## Installed

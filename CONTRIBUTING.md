@@ -21,6 +21,15 @@ python validate.py     # frontmatter + bootstrap + package integrity
 
 Both should be clean before you open a PR. There's no CI — keeping the project lean — so the responsibility is on you and the reviewer.
 
+### Cutting a release
+
+Version lives in **two places only** — keep them in sync when you bump:
+
+1. `SKILL.md` frontmatter — `version: X.Y.Z`
+2. `CHANGELOG.md` — new `## [X.Y.Z] — YYYY-MM-DD` heading with `Added` / `Changed` / `Fixed` / `Removed` / `Security` subsections
+
+Then push, and tag the commit: `git tag -a vX.Y.Z -m "vX.Y.Z — short note"; git push origin vX.Y.Z`. That's the whole release ceremony.
+
 Optional but recommended sanity checks for script changes:
 
 ```bash
