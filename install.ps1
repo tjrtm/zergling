@@ -53,10 +53,16 @@ Write-Host ""
 
 $assetsDir = Join-Path $skillDir "assets"
 Invoke-Action { New-Item -ItemType Directory -Force -Path $assetsDir | Out-Null } "mkdir $assetsDir"
-Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "SKILL.md")              (Join-Path $skillDir "SKILL.md") }              "copy SKILL.md"
-Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "INSTALL.md")            (Join-Path $skillDir "INSTALL.md") }            "copy INSTALL.md"
-Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "assets\bootstrap.html") (Join-Path $skillDir "assets\bootstrap.html") } "copy assets\bootstrap.html"
-Write-Done "wrote   SKILL.md  INSTALL.md  assets\bootstrap.html"
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "SKILL.md")                    (Join-Path $skillDir "SKILL.md") }                    "copy SKILL.md"
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "INSTALL.md")                  (Join-Path $skillDir "INSTALL.md") }                  "copy INSTALL.md"
+# Ship every world template inside the skill so it can self-seed the shell on
+# first use even if this installer's world-seeding is later removed/skipped.
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "assets\bootstrap.html")        (Join-Path $skillDir "assets\bootstrap.html") }        "copy assets\bootstrap.html"
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "assets\shell.html")            (Join-Path $skillDir "assets\shell.html") }            "copy assets\shell.html"
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "assets\version.js")            (Join-Path $skillDir "assets\version.js") }            "copy assets\version.js"
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "assets\timelapse-index.html")  (Join-Path $skillDir "assets\timelapse-index.html") }  "copy assets\timelapse-index.html"
+Invoke-Action { Copy-Item -Force (Join-Path $scriptDir "assets\timelapse-playlist.js") (Join-Path $skillDir "assets\timelapse-playlist.js") } "copy assets\timelapse-playlist.js"
+Write-Done "wrote   SKILL.md  INSTALL.md  assets\ (bootstrap, shell, version, timelapse-index, timelapse-playlist)"
 
 # Seed / refresh the shared world
 Write-Host ""

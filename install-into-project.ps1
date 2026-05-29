@@ -59,13 +59,28 @@ Copy-One (Join-Path $source ".cursor\rules\zergling.mdc")                      (
 Copy-One (Join-Path $source ".github\copilot-instructions.md")                 (Join-Path $Target ".github\copilot-instructions.md")
 Copy-One (Join-Path $source ".github\instructions\zergling.instructions.md")   (Join-Path $Target ".github\instructions\zergling.instructions.md")
 
+# Seed the shared world so the agent has somewhere to express — and, crucially,
+# so the user-facing shell (current.html) exists. Seed each file only if absent
+# so we never clobber an existing world. current.html MUST be the polling shell
+# (shell.html), NOT bootstrap.html — bootstrap is a static placeholder that never
+# loads frame.html, which is the classic "page never updates" bug.
 $world = Join-Path $env:USERPROFILE ".claude\zergling-world"
-if (-not (Test-Path $world)) {
-  Write-Host ""
-  Write-Host "seeding zergling-world -> $world"
-  New-Item -ItemType Directory -Force (Join-Path $world "history") | Out-Null
-  Copy-Item -Force (Join-Path $source "assets\bootstrap.html") (Join-Path $world "current.html")
+Write-Host ""
+Write-Host "seeding zergling-world -> $world"
+New-Item -ItemType Directory -Force (Join-Path $world "history") | Out-Null
+function Seed-World { param([string]$Asset, [string]$Dst)
+  if (Test-Path $Dst) {
+    Write-Host "  keep   $Dst  (already present)"
+  } else {
+    Copy-Item -Force (Join-Path $source $Asset) $Dst
+    Write-Host "  seed   $Dst"
+  }
 }
+Seed-World "assets\shell.html"             (Join-Path $world "current.html")
+Seed-World "assets\bootstrap.html"         (Join-Path $world "frame.html")
+Seed-World "assets\version.js"             (Join-Path $world "version.js")
+Seed-World "assets\timelapse-index.html"   (Join-Path $world "history\index.html")
+Seed-World "assets\timelapse-playlist.js"  (Join-Path $world "history\playlist.js")
 
 Write-Host ""
 Write-Host "  done. this project is now zergling aware in:"

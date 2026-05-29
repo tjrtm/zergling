@@ -2,6 +2,18 @@
 
 All notable changes to **zergling** are documented in this file. The format is loosely based on [Keep a Changelog](https://keepachangelog.com/), and the project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **The shell (`current.html`) was never created on native `.skill` installs — the headline "page never updates / never reloads" bug.** The `.skill` package shipped only `SKILL.md`, `INSTALL.md`, and `assets/bootstrap.html`, with no shell and no installer. Claude Code's native skill install runs no installer script, so `current.html` was never seeded; the agent wrote frames into a world with no shell to display them, and `SKILL.md` explicitly told the agent not to create `current.html`. Fixes:
+  - **Self-bootstrapping skill.** `SKILL.md` now has a "First run — seed the world" step: if `current.html` (or the timelapse files / `version.js` / `frame.html`) is missing, the agent seeds it once from the skill's bundled `assets/` templates. It only ever *creates* a missing `current.html`, never overwrites an existing one.
+  - **Package carries the templates.** `tools/build_skill.py` (and `validate.py`'s expected-entries set) now include `assets/shell.html`, `assets/version.js`, `assets/timelapse-index.html`, and `assets/timelapse-playlist.js`, so the self-seed step has its sources. `zergling.skill` rebuilt.
+  - **`install-into-project.sh` / `.ps1` seeded the wrong file** — they copied `bootstrap.html` *as* `current.html` (a static placeholder that never loads `frame.html`). They now seed `current.html` from `shell.html` and seed a complete minimal world (`frame.html`, `version.js`, `history/index.html`, `history/playlist.js`), each only if absent.
+  - **`install.sh` / `install.ps1` / `web-install.sh` / `web-install.ps1`** now also place all world templates into the skill's `assets/` dir, so a clone/web-installed skill is self-sufficient too.
+- **Stale guardrail wording.** "Always include the auto-reload" (in `SKILL.md`, `AGENTS.md`, and `.github/copilot-instructions.md`) contradicted the shell architecture — it could push agents to put a frame-killing `<meta refresh>` inside `frame.html`. Reworded to "always bump `version.js`; never self-reload inside the frame."
+- **`validate.py`** now asserts `assets/shell.html` is a real polling shell (references `version.js` + `frame.html`, has a `setInterval` loop), not just a meta-refresh placeholder.
+
 ## [0.2.0] — 2026-05-23
 
 First public-ready release. The project graduates from a personal prototype to something installable, packageable, and verifiable.

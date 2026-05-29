@@ -19,10 +19,19 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT  = ROOT / "zergling.skill"
 
 # (tracked source rel path, arcname inside the zip)
+#
+# The package must be self-sufficient: when a user installs the .skill natively
+# (Claude Code's skill install), NO installer script runs, so the skill itself
+# has to be able to seed the world shell on first use. That means the shell and
+# the timelapse templates must ship inside the package — not just bootstrap.html.
 ENTRIES: list[tuple[str, str]] = [
-    ("INSTALL.md",              "zergling/INSTALL.md"),
-    ("SKILL.md",                "zergling/SKILL.md"),
-    ("assets/bootstrap.html",   "zergling/assets/bootstrap.html"),
+    ("INSTALL.md",                  "zergling/INSTALL.md"),
+    ("SKILL.md",                    "zergling/SKILL.md"),
+    ("assets/bootstrap.html",       "zergling/assets/bootstrap.html"),
+    ("assets/shell.html",           "zergling/assets/shell.html"),
+    ("assets/version.js",           "zergling/assets/version.js"),
+    ("assets/timelapse-index.html", "zergling/assets/timelapse-index.html"),
+    ("assets/timelapse-playlist.js","zergling/assets/timelapse-playlist.js"),
 ]
 EXPECTED = {arc for _, arc in ENTRIES}
 

@@ -38,7 +38,9 @@ Open this file in your browser:
 # Windows: C:/Users/<you>/.claude/zergling-world/current.html
 ```
 
-Leave the tab open. The page auto-reloads as the agent expresses itself. A bootstrap placeholder ships so the page exists even before any agent has expressed itself.
+Leave the tab open. The page auto-reloads as the agent expresses itself.
+
+`current.html` is the **shell** that does the auto-reloading. The installers seed it for you. If you installed the skill some other way (e.g. dropping in the `.skill` package, where no installer runs), the agent seeds it from the skill's bundled templates on its first expression — so the shell always ends up present. If your world ever lacks `current.html`, just re-run an installer or ask any agent session to "set up the zergling world."
 
 ## What lives in zergling-world/
 

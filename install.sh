@@ -57,10 +57,16 @@ if [ "${DRY_RUN}" -eq 1 ]; then echo "  (dry run — no files will be modified)"
 echo ""
 
 run mkdir -p "${SKILL_DIR}/assets"
-run cp "${SCRIPT_DIR}/SKILL.md"              "${SKILL_DIR}/SKILL.md"
-run cp "${SCRIPT_DIR}/INSTALL.md"            "${SKILL_DIR}/INSTALL.md"
-run cp "${SCRIPT_DIR}/assets/bootstrap.html" "${SKILL_DIR}/assets/bootstrap.html"
-done_msg "wrote   SKILL.md  INSTALL.md  assets/bootstrap.html"
+run cp "${SCRIPT_DIR}/SKILL.md"                    "${SKILL_DIR}/SKILL.md"
+run cp "${SCRIPT_DIR}/INSTALL.md"                  "${SKILL_DIR}/INSTALL.md"
+# Ship every world template inside the skill so it can self-seed the shell on
+# first use even if this installer's world-seeding is later removed/skipped.
+run cp "${SCRIPT_DIR}/assets/bootstrap.html"       "${SKILL_DIR}/assets/bootstrap.html"
+run cp "${SCRIPT_DIR}/assets/shell.html"           "${SKILL_DIR}/assets/shell.html"
+run cp "${SCRIPT_DIR}/assets/version.js"           "${SKILL_DIR}/assets/version.js"
+run cp "${SCRIPT_DIR}/assets/timelapse-index.html" "${SKILL_DIR}/assets/timelapse-index.html"
+run cp "${SCRIPT_DIR}/assets/timelapse-playlist.js" "${SKILL_DIR}/assets/timelapse-playlist.js"
+done_msg "wrote   SKILL.md  INSTALL.md  assets/ (bootstrap, shell, version, timelapse-index, timelapse-playlist)"
 
 # Seed / refresh the shared world
 echo ""

@@ -162,10 +162,10 @@ Both `install.sh` / `install.ps1` accept `--dry-run` (`-DryRun`) to preview and 
 
 ```bash
 ./pack.sh           # or .\pack.ps1 on Windows
-python validate.py  # frontmatter + bootstrap + package integrity (requires Python 3.9+)
+python validate.py  # frontmatter + bootstrap + shell + package integrity (requires Python 3.9+)
 ```
 
-The `zergling.skill` file is a ZIP whose entries use forward-slash paths and a single top-level `zergling/` directory containing `SKILL.md`, `INSTALL.md`, and `assets/bootstrap.html`. Rebuilt by `pack.sh` from tracked sources; verified by `validate.py`.
+The `zergling.skill` file is a ZIP whose entries use forward-slash paths and a single top-level `zergling/` directory containing `SKILL.md`, `INSTALL.md`, and the world templates under `assets/` (`bootstrap.html`, `shell.html`, `version.js`, `timelapse-index.html`, `timelapse-playlist.js`). The shell and templates ship inside the package so the skill can seed the world's `current.html` itself on first use — Claude Code's native `.skill` install runs no installer script, so the skill must be self-sufficient. Rebuilt by `pack.sh` from tracked sources; verified by `validate.py`.
 
 ### Rebuild the timelapse playlist from disk
 
