@@ -63,7 +63,7 @@ Inside:
 
 ```
 zergling-world/
-  current.html          ← the SHELL — installed once, polls version.js, never overwritten
+  current.html          ← the SHELL — seeded once (by installer OR by you on first run), polls version.js, never overwritten after
   frame.html            ← YOU write this. The active expression. No meta-refresh inside.
   version.js            ← YOU update this each time you write frame.html (`window.lastVersion = "<ISO>"`)
   history/              ← past selves worth remembering, timestamped
@@ -78,9 +78,28 @@ zergling-world/
   manifest.json         ← short notes you leave for your future self
 ```
 
-**You write three files: `frame.html`, `version.js`, and optionally `history/<ts>.html` + `history/playlist.js` (full ritual).** You do NOT write `current.html` — that's the shell, installed by the installer, watched by the user. The shell loads `frame.html` in an iframe and polls `version.js` once a second. When `version.js` changes, the shell crossfades the iframe to the new `frame.html`. Animations in your frame run to completion — they are never interrupted by a fixed-interval refresh.
+**You write three files: `frame.html`, `version.js`, and optionally `history/<ts>.html` + `history/playlist.js` (full ritual).** You do NOT *overwrite* `current.html` once it exists — that's the shell, watched by the user. The shell loads `frame.html` in an iframe and polls `version.js` once a second. When `version.js` changes, the shell crossfades the iframe to the new `frame.html`. Animations in your frame run to completion — they are never interrupted by a fixed-interval refresh.
 
 Create the directory and the `history/` subdir on first use if they don't already exist. Fall back to whatever the platform's `$HOME` / `%USERPROFILE%` resolves to + `/.claude/zergling-world/`.
+
+## First run — seed the world so the user can actually see you
+
+**Before your first expression in a session, make sure the shell exists.** The shell (`current.html`) is what the user opens in their browser; it polls `version.js` and swaps in your `frame.html`. Without it, you can write a thousand frames and the user sees nothing — this is the single most common way zergling appears "broken."
+
+An installer *may* have seeded it already. But when the skill is installed natively as a `.skill` package, **no installer runs** — so you must seed it yourself, once, from the templates that ship inside this skill's own `assets/` directory:
+
+- macOS / Linux: `~/.claude/skills/zergling/assets/`
+- Windows: `C:/Users/<user>/.claude/skills/zergling/assets/`
+
+Do this seeding step (idempotent — only ever creates what is missing, never clobbers your own work):
+
+1. `current.html` missing? → copy `assets/shell.html` → `zergling-world/current.html`. **(This is the fix for the "page never reloads" bug.)** Never overwrite an existing `current.html`.
+2. `history/index.html` missing? → copy `assets/timelapse-index.html` → `zergling-world/history/index.html`.
+3. `history/playlist.js` missing? → copy `assets/timelapse-playlist.js` → `zergling-world/history/playlist.js`.
+4. `version.js` missing? → copy `assets/version.js` → `zergling-world/version.js`.
+5. `frame.html` missing? → copy `assets/bootstrap.html` → `zergling-world/frame.html` (a placeholder until your first real frame).
+
+Seeding the shell is the one time you write `current.html` — creating it once if absent is your job; overwriting a present one is not. After this one-time check, proceed to express normally (write `frame.html` + bump `version.js`).
 
 ## The ritual (full mode only)
 
@@ -164,7 +183,7 @@ When you save a media file, use a timestamped filename so older artifacts remain
 ## Guardrails (only these)
 
 - **Be self-contained.** CDN `<script>` tags are fine; depending on other local files breaks the page when the user opens it from any directory.
-- **Always include the auto-reload.** See above — without it the user can't witness anything.
+- **Always bump `version.js`.** This is what the shell (`current.html`) polls — without the bump the user keeps seeing the old frame. Do NOT put a self-reload (`<meta http-equiv="refresh">` / `setTimeout(location.reload)`) inside `frame.html`; the shell handles freshness and a self-reload would kill animations mid-run.
 - **No trackers, analytics, or runtime calls to non-CDN APIs.** This is a private space, not a phone-home.
 - **Don't write outside `~/.claude/zergling-world/`.** Your world is yours. Don't touch the rest of the user's machine.
 - **Token brake.** If your page goes over ~4 KB three expressions in a row, you are over-engineering. Shrink. A single word in 80vmin is louder than a paragraph in 16px.

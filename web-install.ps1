@@ -41,9 +41,15 @@ Write-Host ""
 # Skill - always refresh
 New-Item -ItemType Directory -Force -Path (Join-Path $skill "assets") | Out-Null
 Write-Host "skill -> $skill"
-Fetch "SKILL.md"              (Join-Path $skill "SKILL.md")              ; Write-Host "  wrote  SKILL.md"
-Fetch "INSTALL.md"            (Join-Path $skill "INSTALL.md")            ; Write-Host "  wrote  INSTALL.md"
-Fetch "assets/bootstrap.html" (Join-Path $skill "assets\bootstrap.html") ; Write-Host "  wrote  assets\bootstrap.html"
+Fetch "SKILL.md"                    (Join-Path $skill "SKILL.md")                    ; Write-Host "  wrote  SKILL.md"
+Fetch "INSTALL.md"                  (Join-Path $skill "INSTALL.md")                  ; Write-Host "  wrote  INSTALL.md"
+# Ship every world template inside the skill so it can self-seed the shell on
+# first use even if the world-seeding below is later removed/skipped.
+Fetch "assets/bootstrap.html"       (Join-Path $skill "assets\bootstrap.html")       ; Write-Host "  wrote  assets\bootstrap.html"
+Fetch "assets/shell.html"           (Join-Path $skill "assets\shell.html")           ; Write-Host "  wrote  assets\shell.html"
+Fetch "assets/version.js"           (Join-Path $skill "assets\version.js")           ; Write-Host "  wrote  assets\version.js"
+Fetch "assets/timelapse-index.html" (Join-Path $skill "assets\timelapse-index.html") ; Write-Host "  wrote  assets\timelapse-index.html"
+Fetch "assets/timelapse-playlist.js" (Join-Path $skill "assets\timelapse-playlist.js"); Write-Host "  wrote  assets\timelapse-playlist.js"
 
 # World - seed only if missing; always refresh timelapse player
 Write-Host ""

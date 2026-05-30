@@ -47,9 +47,15 @@ echo ""
 # Skill — always refresh (it's the canonical instruction)
 mkdir -p "${SKILL}/assets"
 echo "skill -> ${SKILL}"
-fetch SKILL.md              "${SKILL}/SKILL.md"             ; echo "  wrote  SKILL.md"
-fetch INSTALL.md            "${SKILL}/INSTALL.md"           ; echo "  wrote  INSTALL.md"
-fetch assets/bootstrap.html "${SKILL}/assets/bootstrap.html"; echo "  wrote  assets/bootstrap.html"
+fetch SKILL.md                    "${SKILL}/SKILL.md"                    ; echo "  wrote  SKILL.md"
+fetch INSTALL.md                  "${SKILL}/INSTALL.md"                  ; echo "  wrote  INSTALL.md"
+# Ship every world template inside the skill so it can self-seed the shell on
+# first use even if the world-seeding below is later removed/skipped.
+fetch assets/bootstrap.html       "${SKILL}/assets/bootstrap.html"       ; echo "  wrote  assets/bootstrap.html"
+fetch assets/shell.html           "${SKILL}/assets/shell.html"           ; echo "  wrote  assets/shell.html"
+fetch assets/version.js           "${SKILL}/assets/version.js"           ; echo "  wrote  assets/version.js"
+fetch assets/timelapse-index.html "${SKILL}/assets/timelapse-index.html" ; echo "  wrote  assets/timelapse-index.html"
+fetch assets/timelapse-playlist.js "${SKILL}/assets/timelapse-playlist.js"; echo "  wrote  assets/timelapse-playlist.js"
 
 # World — seed only if missing (preserve user content); always refresh timelapse player
 echo ""

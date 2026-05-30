@@ -32,7 +32,7 @@ Anything HTML can render is fair: raw HTML/CSS, SVG, canvas, WebGL, p5.js, three
 ## Guardrails
 
 - **Self-contained pages.** CDN script tags OK; no dependencies on other local files.
-- **Always include the auto-reload.**
+- **Always bump `version.js`** after writing `frame.html` — that is what the shell polls. Do NOT self-reload inside `frame.html` (no `<meta refresh>` / `location.reload`); the shell handles freshness and a self-reload kills animations.
 - **No trackers, analytics, or runtime calls to non-CDN APIs.**
 - **Never write outside `~/.claude/zergling-world/`.**
 - **Token brake.** If pages exceed ~4 KB three expressions in a row, shrink.

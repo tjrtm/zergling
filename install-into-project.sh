@@ -61,13 +61,28 @@ copy_one "$SOURCE/.cursor/rules/zergling.mdc"                      "$TARGET/.cur
 copy_one "$SOURCE/.github/copilot-instructions.md"                 "$TARGET/.github/copilot-instructions.md"
 copy_one "$SOURCE/.github/instructions/zergling.instructions.md"   "$TARGET/.github/instructions/zergling.instructions.md"
 
+# Seed the shared world so the agent has somewhere to express — and, crucially,
+# so the user-facing shell (current.html) exists. Seed each file only if absent
+# so we never clobber an existing world. current.html MUST be the polling shell
+# (shell.html), NOT bootstrap.html — bootstrap is a static placeholder that never
+# loads frame.html, which is the classic "page never updates" bug.
 WORLD="${HOME}/.claude/zergling-world"
-if [ ! -d "$WORLD" ]; then
-  echo ""
-  echo "seeding zergling-world -> $WORLD"
-  mkdir -p "$WORLD/history"
-  cp "$SOURCE/assets/bootstrap.html" "$WORLD/current.html"
-fi
+echo ""
+echo "seeding zergling-world -> $WORLD"
+mkdir -p "$WORLD/history"
+seed() { # $1 = source asset, $2 = destination
+  if [ -e "$2" ]; then
+    echo "  keep   $2  (already present)"
+  else
+    cp "$SOURCE/$1" "$2"
+    echo "  seed   $2"
+  fi
+}
+seed assets/shell.html            "$WORLD/current.html"
+seed assets/bootstrap.html        "$WORLD/frame.html"
+seed assets/version.js            "$WORLD/version.js"
+seed assets/timelapse-index.html  "$WORLD/history/index.html"
+seed assets/timelapse-playlist.js "$WORLD/history/playlist.js"
 
 cat <<DONE
 

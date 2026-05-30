@@ -6,6 +6,8 @@ Checks:
      length is sane; optional `version` is a non-empty string if present.
   2. assets/bootstrap.html includes an auto-refresh mechanism
      (either a meta http-equiv refresh or a setTimeout reload).
+  2b. assets/shell.html is a real polling shell — references version.js and
+     frame.html and has a setInterval loop (not just a meta-refresh placeholder).
   3. zergling.skill exists, is a ZIP, contains exactly the expected
      entries, and each packaged file is byte-identical to its tracked source.
   4. (optional) Runs `agentskills validate <skill-dir>` if `agentskills`
@@ -28,9 +30,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 
 EXPECTED_ENTRIES = {
-    "zergling/INSTALL.md":            "INSTALL.md",
-    "zergling/SKILL.md":              "SKILL.md",
-    "zergling/assets/bootstrap.html": "assets/bootstrap.html",
+    "zergling/INSTALL.md":                  "INSTALL.md",
+    "zergling/SKILL.md":                    "SKILL.md",
+    "zergling/assets/bootstrap.html":       "assets/bootstrap.html",
+    "zergling/assets/shell.html":           "assets/shell.html",
+    "zergling/assets/version.js":           "assets/version.js",
+    "zergling/assets/timelapse-index.html": "assets/timelapse-index.html",
+    "zergling/assets/timelapse-playlist.js":"assets/timelapse-playlist.js",
 }
 SKILL_PKG = ROOT / "zergling.skill"
 
@@ -112,6 +118,29 @@ def check_bootstrap() -> None:
         fail("bootstrap.html: no auto-refresh found (expected meta refresh or setTimeout reload)")
 
 
+def check_shell() -> None:
+    step("assets/shell.html polling shell")
+    p = ROOT / "assets" / "shell.html"
+    if not p.is_file():
+        fail(f"missing: {p}")
+        return
+    body = p.read_text(encoding="utf-8")
+    # The shell must actively poll version.js and swap frame.html — that is the
+    # whole reason it exists. A shell that only meta-refreshes is a regression to
+    # the broken placeholder behavior, so assert the polling machinery is present.
+    polls_version = "version.js" in body
+    loads_frame   = "frame.html" in body
+    has_poll_loop = bool(re.search(r"setInterval\s*\(", body))
+    if not polls_version:
+        fail("shell.html: does not reference version.js (no change detection)")
+    if not loads_frame:
+        fail("shell.html: does not reference frame.html (nothing to display)")
+    if not has_poll_loop:
+        fail("shell.html: no setInterval polling loop found")
+    if polls_version and loads_frame and has_poll_loop:
+        print("  ok: polls version.js, loads frame.html, has setInterval loop")
+
+
 def sha256(p: Path) -> str:
     h = hashlib.sha256()
     h.update(p.read_bytes())
@@ -181,6 +210,7 @@ def main() -> int:
     print(f"validating zergling at {ROOT}")
     check_skill_md()
     check_bootstrap()
+    check_shell()
     check_package()
     check_agentskills_validator()
 
